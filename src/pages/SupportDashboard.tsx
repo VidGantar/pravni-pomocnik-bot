@@ -85,27 +85,32 @@ const SupportDashboard = () => {
     }
 
     // Save to FAQ for future reference
-    await supabase.from('faq_entries').insert({
+    const { error: faqError } = await supabase.from('faq_entries').insert({
       question: resolveTicket.subject,
       answer: resolution,
       category: resolveTicket.category,
     });
+    if (faqError) console.error('FAQ insert error:', faqError);
 
-    // Append to "Pretekla vprašanja" document using AI summary from description
-    const { data: pastDoc } = await supabase
+    // Append to "Pretekla vprašanja" document
+    const { data: pastDoc, error: docFetchError } = await supabase
       .from('documents')
       .select('id, content')
       .eq('category', 'pretekla-vprasanja')
       .single();
 
-    if (pastDoc) {
+    if (docFetchError) {
+      console.error('Failed to fetch pretekla vprašanja doc:', docFetchError);
+    } else if (pastDoc) {
       const date = new Date().toLocaleDateString('sl-SI');
       const summary = resolveTicket.description || resolveTicket.subject;
       const entry = `\n**${date} — ${resolveTicket.category}**\n**Vprašanje:** ${resolveTicket.subject}\n**Povzetek:** ${summary}\n**Rešitev:** ${resolution}\n\n---\n`;
-      await supabase
+      const { error: docUpdateError } = await supabase
         .from('documents')
         .update({ content: pastDoc.content + entry })
         .eq('id', pastDoc.id);
+      if (docUpdateError) console.error('Failed to update pretekla vprašanja:', docUpdateError);
+      else console.log('Successfully updated pretekla vprašanja document');
     }
 
     } finally {
