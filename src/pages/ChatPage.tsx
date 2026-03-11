@@ -357,7 +357,7 @@ const ChatPage = () => {
           </div>
 
           {/* Messages */}
-          <div className="flex-1 overflow-y-auto px-6 py-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          <ScrollArea className="flex-1 px-6 py-4">
             <div className="mx-auto max-w-3xl space-y-4">
               {messages.length === 0 && !activeConvId && (
                 <div className="flex flex-col items-center justify-center py-20 text-center">
@@ -407,7 +407,7 @@ const ChatPage = () => {
 
               <div ref={messagesEndRef} />
             </div>
-          </div>
+          </ScrollArea>
 
           {/* Input */}
           {!isResolved ? (
