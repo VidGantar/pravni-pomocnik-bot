@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
         console.log(`Sending email directly to ${NOTIFY_EMAIL}`);
         const result = await sendLovableEmail(
           {
-            run_id: runId,
+            run_id: '',
             to: NOTIFY_EMAIL,
             from: 'ePTP Pomočnik <obvestila@notify.eptp.click>',
             sender_domain: 'notify.eptp.click',
