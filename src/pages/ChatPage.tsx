@@ -171,6 +171,10 @@ const ChatPage = () => {
 
       if (!canAnswer) {
         setShowContactSupport(true);
+        await supabase
+          .from('conversations')
+          .update({ needs_support: true })
+          .eq('id', convId);
       }
     } catch (err) {
       console.error('Chat error:', err);
