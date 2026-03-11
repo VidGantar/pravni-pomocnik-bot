@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
+import logo from '@/assets/logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, FileText, LayoutDashboard, HeadphonesIcon, LogOut, Shield, User } from 'lucide-react';
+import { MessageCircle, FileText, LayoutDashboard, HeadphonesIcon, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -51,11 +52,9 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex h-screen bg-background">
       <aside className="flex w-64 flex-col bg-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sidebar-primary">
-            <Shield className="h-5 w-5 text-sidebar-primary-foreground" />
-          </div>
+          <img src={logo} alt="ePTP logo" className="h-10 w-10 rounded-xl" />
           <div>
-            <h1 className="font-display text-lg font-bold text-sidebar-foreground">DOdv</h1>
+            <h1 className="font-display text-lg font-bold text-sidebar-foreground">ePTP</h1>
             <p className="text-xs text-sidebar-foreground/60">Pomočnik</p>
           </div>
         </div>

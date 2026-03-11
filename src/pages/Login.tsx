@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
+import logo from '@/assets/logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Shield, LogIn } from 'lucide-react';
+import { LogIn } from 'lucide-react';
 import { toast } from 'sonner';
 
 const Login = () => {
@@ -45,14 +46,12 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary">
-            <Shield className="h-8 w-8 text-primary-foreground" />
-          </div>
+          <img src={logo} alt="ePTP logo" className="mx-auto mb-4 h-16 w-16 rounded-2xl" />
           <h1 className="font-display text-3xl font-bold text-foreground">
-            DOdv Pomočnik
+            ePTP Pomočnik
           </h1>
           <p className="mt-2 text-muted-foreground">
-            Interni pomočnik Državnega odvetništva
+            Elektronska pravno-tehnična pomoč
           </p>
         </div>
 

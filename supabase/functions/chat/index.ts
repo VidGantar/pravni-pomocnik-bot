@@ -40,7 +40,7 @@ serve(async (req) => {
       ? faqs.map((f: any) => `V: ${f.question}\nO: ${f.answer}`).join('\n\n')
       : '';
 
-    const systemPrompt = `Si interni pomočnik Državnega odvetništva Republike Slovenije (DOdv). Tvoje ime je "DOdv Pomočnik".
+    const systemPrompt = `Si interni pomočnik za elektronsko pravno-tehnično pomoč (ePTP). Tvoje ime je "ePTP Pomočnik".
 
 Tvoja naloga je pomagati zaposlenim pri:
 - IT podpori (računalniki, sistemi, prijave, dostopi)
