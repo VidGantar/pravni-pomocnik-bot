@@ -29,10 +29,6 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
-  const projectId = Deno.env.get('LOVABLE_PROJECT_ID') || Deno.env.get('PROJECT_ID')
-  const workspaceId = 'wpczgwxsriezaubncuom'
-  
-  console.log('Debug - all env keys:', JSON.stringify(Object.keys(Deno.env.toObject())))
 
   if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables')
@@ -168,23 +164,24 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const emailRunId = payload.run_id || Deno.env.get('DENO_DEPLOYMENT_ID') || ''
-        console.log('Sending with run_id:', emailRunId, 'deployment:', Deno.env.get('DENO_DEPLOYMENT_ID'))
         await sendLovableEmail(
           {
-            run_id: emailRunId,
+            run_id: payload.run_id,
             to: payload.to,
-            from: payload.from || 'ePTP Pomočnik <obvestila@notify.eptp.click>',
-            sender_domain: payload.sender_domain || 'notify.eptp.click',
+            from: payload.from,
+            sender_domain: payload.sender_domain,
             subject: payload.subject,
             html: payload.html,
-            text: payload.text || payload.subject || '',
-            purpose: payload.purpose || 'transactional',
+            text: payload.text,
+            purpose: payload.purpose,
             label: payload.label,
             external_id: payload.external_id,
             idempotency_key: payload.idempotency_key,
             unsubscribe_token: payload.unsubscribe_token,
           },
+          // sendUrl is optional — when LOVABLE_SEND_URL is not set, the library
+          // falls back to the default Lovable API endpoint (https://api.lovable.dev).
+          // Set LOVABLE_SEND_URL as a Supabase secret to override (e.g. for local dev).
           { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
         )
 

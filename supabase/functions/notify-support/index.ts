@@ -1,9 +1,12 @@
+import { sendLovableEmail } from 'npm:@lovable.dev/email-js'
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
+
+const NOTIFY_EMAIL = "tim.biziak25@gmail.com";
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -13,6 +16,7 @@ Deno.serve(async (req) => {
   try {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const apiKey = Deno.env.get("LOVABLE_API_KEY");
     const supabase = createClient(supabaseUrl, serviceRoleKey);
 
     const { support_user_id, ticket_subject, ticket_description } = await req.json();
@@ -24,21 +28,14 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Get support user's email
+    // Get support user's name for the email
     const { data: profile } = await supabase
       .from("profiles")
       .select("email, full_name")
       .eq("user_id", support_user_id)
       .single();
 
-    if (!profile?.email) {
-      return new Response(JSON.stringify({ error: "Support user email not found" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    const appUrl = req.headers.get("origin") || "https://id-preview--4f177b1a-10a9-43e9-9bda-4d3890b9b170.lovable.app";
+    const appUrl = req.headers.get("origin") || "https://eptp.lovable.app";
     const supportPageUrl = `${appUrl}/podpora`;
 
     const htmlBody = `
@@ -53,20 +50,16 @@ Deno.serve(async (req) => {
     <tr>
       <td align="center">
         <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="background-color:#ffffff;border-radius:12px;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,0.1);">
-          <!-- Header -->
           <tr>
             <td style="background-color:#1e293b;padding:24px 32px;">
               <h1 style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">ePTP Pomočnik</h1>
             </td>
           </tr>
-          <!-- Body -->
           <tr>
             <td style="padding:32px;">
               <h2 style="margin:0 0 16px;color:#1e293b;font-size:20px;font-weight:600;">Nova zahteva na portalu</h2>
-              <p style="margin:0 0 8px;color:#64748b;font-size:14px;">Pozdravljeni ${profile.full_name || ''},</p>
+              <p style="margin:0 0 8px;color:#64748b;font-size:14px;">Dodeljena osebi: ${profile?.full_name || 'Podporni uporabnik'}</p>
               <p style="margin:0 0 24px;color:#64748b;font-size:14px;">Prejeli ste novo zahtevo za podporo.</p>
-              
-              <!-- Ticket info card -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f8fafc;border-radius:8px;border:1px solid #e2e8f0;margin-bottom:24px;">
                 <tr>
                   <td style="padding:16px;">
@@ -75,12 +68,10 @@ Deno.serve(async (req) => {
                   </td>
                 </tr>
               </table>
-
-              <!-- CTA Button -->
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
-                    <a href="${supportPageUrl}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 32px;border-radius:8px;letter-spacing:0.3px;">
+                    <a href="${supportPageUrl}" target="_blank" style="display:inline-block;background-color:#2563eb;color:#ffffff;text-decoration:none;font-size:14px;font-weight:600;padding:12px 32px;border-radius:8px;">
                       Odpri moje zahteve
                     </a>
                   </td>
@@ -88,7 +79,6 @@ Deno.serve(async (req) => {
               </table>
             </td>
           </tr>
-          <!-- Footer -->
           <tr>
             <td style="padding:16px 32px;border-top:1px solid #e2e8f0;">
               <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">To sporočilo je bilo samodejno poslano iz portala ePTP Pomočnik.</p>
@@ -101,35 +91,37 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-    // Send via pgmq transactional email queue
     let emailSent = false;
 
-    try {
-      const { error: queueError } = await supabase.rpc("enqueue_email" as any, {
-        queue_name: "transactional_emails",
-        payload: {
-          to: profile.email,
-          subject: `Nova zahteva: ${ticket_subject}`,
-          html: htmlBody,
-          purpose: "transactional",
-        },
-      });
-      if (!queueError) {
+    if (apiKey) {
+      try {
+        console.log(`Sending email directly to ${NOTIFY_EMAIL}`);
+        const result = await sendLovableEmail(
+          {
+            run_id: '',
+            to: NOTIFY_EMAIL,
+            from: 'ePTP Pomočnik <obvestila@notify.eptp.click>',
+            sender_domain: 'notify.eptp.click',
+            subject: `Nova zahteva: ${ticket_subject}`,
+            html: htmlBody,
+            text: `Nova zahteva: ${ticket_subject} - ${ticket_description || 'Ni opisa'}`,
+            purpose: 'transactional',
+            label: 'support-notification',
+          },
+          { apiKey, sendUrl: Deno.env.get('LOVABLE_SEND_URL') }
+        );
         emailSent = true;
-        console.log(`Email queued for ${profile.email}`);
-      } else {
-        console.error("enqueue_email error:", queueError);
+        console.log(`Email sent successfully to ${NOTIFY_EMAIL}`);
+      } catch (e) {
+        const errMsg = e instanceof Error ? e.message : String(e);
+        console.error("Direct email send failed:", errMsg);
       }
-    } catch (e) {
-      console.error("Queue send failed:", e);
-    }
-
-    if (!emailSent) {
-      console.log(`Email could not be queued for ${profile.email}`);
+    } else {
+      console.error("LOVABLE_API_KEY not available");
     }
 
     return new Response(
-      JSON.stringify({ success: true, email_sent: emailSent, recipient: profile.email }),
+      JSON.stringify({ success: true, email_sent: emailSent, recipient: NOTIFY_EMAIL }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {
