@@ -62,7 +62,7 @@ const ChatPage = () => {
         .select('*')
         .eq('conversation_id', activeConvId)
         .order('created_at', { ascending: true });
-      if (data) setMessages(data as Message[]);
+      if (data) setMessages(data as unknown as Message[]);
     };
     load();
   }, [activeConvId]);
