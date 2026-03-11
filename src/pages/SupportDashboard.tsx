@@ -10,7 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { HeadphonesIcon, AlertCircle, CheckCircle2, Clock } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { HeadphonesIcon, AlertCircle, CheckCircle2, ArrowRightLeft, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface TicketRow {
@@ -26,12 +27,26 @@ interface TicketRow {
   conversation_id: string | null;
 }
 
+interface SupportUser {
+  user_id: string;
+  full_name: string | null;
+  email: string | null;
+  department: string | null;
+}
+
 const SupportDashboard = () => {
   const { user } = useAuth();
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [resolveTicket, setResolveTicket] = useState<TicketRow | null>(null);
   const [resolution, setResolution] = useState('');
   const [isResolving, setIsResolving] = useState(false);
+
+  // Reassignment state
+  const [reassignTicket, setReassignTicket] = useState<TicketRow | null>(null);
+  const [supportUsers, setSupportUsers] = useState<SupportUser[]>([]);
+  const [selectedSupportUser, setSelectedSupportUser] = useState('');
+  const [isReassigning, setIsReassigning] = useState(false);
+  const [loadingSupportUsers, setLoadingSupportUsers] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -48,6 +63,77 @@ const SupportDashboard = () => {
     if (data) setTickets(data as TicketRow[]);
   };
 
+  const loadSupportUsers = async () => {
+    setLoadingSupportUsers(true);
+    try {
+      const { data: roleRows } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('role', 'support');
+      if (!roleRows || roleRows.length === 0) {
+        setSupportUsers([]);
+        return;
+      }
+      const supportIds = roleRows.map(r => r.user_id).filter(id => id !== user?.id);
+      if (supportIds.length === 0) {
+        setSupportUsers([]);
+        return;
+      }
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, email, department')
+        .in('user_id', supportIds);
+      if (profiles) setSupportUsers(profiles as SupportUser[]);
+    } finally {
+      setLoadingSupportUsers(false);
+    }
+  };
+
+  const handleReassign = async () => {
+    if (!reassignTicket || !selectedSupportUser) {
+      toast.error('Izberite podpornika');
+      return;
+    }
+    if (isReassigning) return;
+    setIsReassigning(true);
+
+    try {
+      // Update ticket assignment
+      await supabase
+        .from('tickets')
+        .update({ assigned_to: selectedSupportUser })
+        .eq('id', reassignTicket.id);
+
+      // Update conversation assignment if linked
+      if (reassignTicket.conversation_id) {
+        await supabase
+          .from('conversations')
+          .update({ assigned_to: selectedSupportUser })
+          .eq('id', reassignTicket.conversation_id);
+      }
+
+      // Send email notification to new support user
+      try {
+        await supabase.functions.invoke('notify-support', {
+          body: {
+            support_user_id: selectedSupportUser,
+            ticket_subject: reassignTicket.subject,
+            ticket_description: reassignTicket.description,
+          },
+        });
+      } catch (emailErr) {
+        console.error('Email notification failed:', emailErr);
+      }
+
+      toast.success('Zahteva je bila prenesena');
+      setReassignTicket(null);
+      setSelectedSupportUser('');
+      loadTickets();
+    } finally {
+      setIsReassigning(false);
+    }
+  };
+
   const handleResolve = async () => {
     if (!resolveTicket || !resolution.trim()) {
       toast.error('Vnesite rešitev');
@@ -57,62 +143,63 @@ const SupportDashboard = () => {
     setIsResolving(true);
 
     try {
-    // Update ticket
-    await supabase
-      .from('tickets')
-      .update({
-        status: 'resolved',
-        resolution,
-        resolved_at: new Date().toISOString(),
-      })
-      .eq('id', resolveTicket.id);
-
-    // Update conversation status
-    if (resolveTicket.conversation_id) {
+      // Update ticket
       await supabase
-        .from('conversations')
-        .update({ status: 'resolved_support' })
-        .eq('id', resolveTicket.conversation_id);
+        .from('tickets')
+        .update({
+          status: 'resolved',
+          resolution,
+          resolved_at: new Date().toISOString(),
+        })
+        .eq('id', resolveTicket.id);
 
-      // Add resolution message to conversation
-      await supabase
-        .from('messages')
-        .insert({
-          conversation_id: resolveTicket.conversation_id,
-          role: 'support',
-          content: `✅ Rešitev: ${resolution}`,
-        });
-    }
+      // Update conversation status
+      if (resolveTicket.conversation_id) {
+        await supabase
+          .from('conversations')
+          .update({ status: 'resolved_support' })
+          .eq('id', resolveTicket.conversation_id);
 
-    // Save to FAQ for future reference
-    const { error: faqError } = await supabase.from('faq_entries').insert({
-      question: resolveTicket.subject,
-      answer: resolution,
-      category: resolveTicket.category,
-    });
-    if (faqError) console.error('FAQ insert error:', faqError);
+        // Add resolution message to conversation
+        await supabase
+          .from('messages')
+          .insert({
+            conversation_id: resolveTicket.conversation_id,
+            role: 'support',
+            content: `✅ Rešitev: ${resolution}`,
+          });
+      }
 
-    // Append to "Pretekla vprašanja" document
-    const { data: pastDoc, error: docFetchError } = await supabase
-      .from('documents')
-      .select('id, content')
-      .eq('category', 'pretekla-vprasanja')
-      .single();
+      // Save to FAQ for future reference
+      const { error: faqError } = await supabase.from('faq_entries').insert({
+        question: resolveTicket.subject,
+        answer: resolution,
+        category: resolveTicket.category,
+      });
+      if (faqError) console.error('FAQ insert error:', faqError);
 
-    if (docFetchError) {
-      console.error('Failed to fetch pretekla vprašanja doc:', docFetchError);
-    } else if (pastDoc) {
-      const date = new Date().toLocaleDateString('sl-SI');
-      const summary = resolveTicket.description || resolveTicket.subject;
-      const entry = `\n**${date} — ${resolveTicket.category}**\n**Vprašanje:** ${resolveTicket.subject}\n**Povzetek:** ${summary}\n**Rešitev:** ${resolution}\n\n---\n`;
-      const { error: docUpdateError } = await supabase
+      // Append to "Pretekla vprašanja" document
+      const { data: pastDoc, error: docFetchError } = await supabase
         .from('documents')
-        .update({ content: pastDoc.content + entry })
-        .eq('id', pastDoc.id);
-      if (docUpdateError) console.error('Failed to update pretekla vprašanja:', docUpdateError);
-      else console.log('Successfully updated pretekla vprašanja document');
-    }
+        .select('id, content')
+        .eq('category', 'pretekla-vprasanja')
+        .single();
 
+      if (docFetchError) {
+        console.error('Failed to fetch pretekla vprašanja doc:', docFetchError);
+      } else if (pastDoc) {
+        const date = new Date().toLocaleDateString('sl-SI');
+        const summary = resolveTicket.description || resolveTicket.subject;
+        const entry = `\n**${date} — ${resolveTicket.category}**\n**Vprašanje:** ${resolveTicket.subject}\n**Povzetek:** ${summary}\n**Rešitev:** ${resolution}\n\n---\n`;
+        const { error: docUpdateError } = await supabase
+          .from('documents')
+          .update({ content: pastDoc.content + entry })
+          .eq('id', pastDoc.id);
+        if (docUpdateError) console.error('Failed to update pretekla vprašanja:', docUpdateError);
+        else console.log('Successfully updated pretekla vprašanja document');
+      }
+
+      toast.success('Zahteva je bila rešena');
     } finally {
       setIsResolving(false);
     }
@@ -164,15 +251,29 @@ const SupportDashboard = () => {
                             </span>
                           </div>
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="shrink-0 gap-1 border-success/30 text-success hover:bg-success/10"
-                          onClick={() => setResolveTicket(ticket)}
-                        >
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Reši
-                        </Button>
+                        <div className="flex shrink-0 gap-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 border-primary/30 text-primary hover:bg-primary/10"
+                            onClick={() => {
+                              setReassignTicket(ticket);
+                              loadSupportUsers();
+                            }}
+                          >
+                            <ArrowRightLeft className="h-3.5 w-3.5" />
+                            Prenesi
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 border-success/30 text-success hover:bg-success/10"
+                            onClick={() => setResolveTicket(ticket)}
+                          >
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Reši
+                          </Button>
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -227,6 +328,53 @@ const SupportDashboard = () => {
               <Button onClick={handleResolve} className="w-full gap-2" disabled={isResolving}>
                 <CheckCircle2 className="h-4 w-4" />
                 {isResolving ? 'Reševanje...' : 'Označi kot rešeno'}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Reassign dialog */}
+        <Dialog open={!!reassignTicket} onOpenChange={open => { if (!open) { setReassignTicket(null); setSelectedSupportUser(''); } }}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Prenesi zahtevo</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <p className="text-sm font-medium text-foreground">{reassignTicket?.subject}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{reassignTicket?.description}</p>
+              </div>
+              <div>
+                <Label>Izberite podpornika</Label>
+                {loadingSupportUsers ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                  </div>
+                ) : supportUsers.length === 0 ? (
+                  <p className="py-4 text-center text-sm text-muted-foreground">Ni drugih podpornikov</p>
+                ) : (
+                  <Select value={selectedSupportUser} onValueChange={setSelectedSupportUser}>
+                    <SelectTrigger className="mt-1">
+                      <SelectValue placeholder="Izberite podpornika..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {supportUsers.map(su => (
+                        <SelectItem key={su.user_id} value={su.user_id}>
+                          {su.full_name || su.email || su.user_id}
+                          {su.department ? ` (${su.department})` : ''}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+              <Button
+                onClick={handleReassign}
+                className="w-full gap-2"
+                disabled={isReassigning || !selectedSupportUser}
+              >
+                <ArrowRightLeft className="h-4 w-4" />
+                {isReassigning ? 'Prenašanje...' : 'Prenesi zahtevo'}
               </Button>
             </div>
           </DialogContent>

@@ -265,7 +265,7 @@ const ChatPage = () => {
     setShowContactSupport(false);
     setShowSupportDialog(false);
 
-    // Fetch support user profile for the message and mailto
+    // Fetch support user profile for the message
     const { data: supportProfile } = await supabase
       .from('profiles')
       .select('full_name, email, department')
@@ -276,22 +276,20 @@ const ChatPage = () => {
     const supportContact = supportProfile?.email || '';
     const supportDept = supportProfile?.department || '';
 
-    // Open mailto link with pre-filled email
-    if (supportContact) {
-      const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
-      const emailSubject = `[DOdv Podpora] ${lastUserMsg?.content.slice(0, 80) || 'Zahteva za podporo'}`;
-      const conversationSummary = messages
-        .slice(-6)
-        .map(m => `${m.role === 'user' ? 'Uporabnik' : 'Pomočnik'}: ${m.content}`)
-        .join('\n\n');
-      const appUrl = `${window.location.origin}/support`;
-      const emailBody = `Pozdravljeni ${supportName},\n\nPrejet je bil zahtevek za podporo.\n\nKategorija: ${suggestedDepartment || 'Splošno'}\n\nPovzetek pogovora:\n${conversationSummary}\n\n---\nZahtevek lahko rešite v aplikaciji:\n${appUrl}\n\nLep pozdrav`;
-
-      const mailtoLink = `mailto:${encodeURIComponent(supportContact)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-      window.open(mailtoLink, '_blank');
+    // Send email notification to support user via edge function
+    try {
+      await supabase.functions.invoke('notify-support', {
+        body: {
+          support_user_id: supportUserId,
+          ticket_subject: convTitle,
+          ticket_description: description,
+        },
+      });
+    } catch (emailErr) {
+      console.error('Email notification failed:', emailErr);
     }
 
-    toast.success('Zahteva za podporo je bila ustvarjena. Odprl se je email za pošiljanje.');
+    toast.success('Zahteva za podporo je bila ustvarjena.');
 
     // Use special markup: [[name||contact||dept]] for hover support
     const content = `📋 Vaša zahteva je bila posredovana [[${supportName}||${supportContact}||${supportDept}]] v podporni službi. Obvestili vas bomo, ko bo rešena.`;
