@@ -229,16 +229,32 @@ const ChatPage = () => {
       .update({ status: 'pending_support', assigned_to: supportUserId })
       .eq('id', activeConvId);
 
-    // Create ticket
-    const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+    // Fetch user profile for contact info
+    const { data: userProfile } = await supabase
+      .from('profiles')
+      .select('full_name, email, department')
+      .eq('user_id', user.id)
+      .single();
+
+    // Build concise ticket
+    const convTitle = conversations.find(c => c.id === activeConvId)?.title || 'Zahteva za podporo';
+    const userMessages = messages.filter(m => m.role === 'user').map(m => m.content);
+    const aiSummary = userMessages.length > 0
+      ? userMessages.slice(-3).join(' → ').slice(0, 300)
+      : 'Ni opisa';
+    const userName = userProfile?.full_name || userProfile?.email || 'Neznan';
+    const userEmail = userProfile?.email || '';
+
+    const description = `Povzetek: ${aiSummary}\n\nUporabnik: ${userName}\nEmail: ${userEmail}`;
+
     await supabase
       .from('tickets')
       .insert({
         conversation_id: activeConvId,
         user_id: user.id,
         assigned_to: supportUserId,
-        subject: lastUserMsg?.content.slice(0, 100) || 'Zahteva za podporo',
-        description: messages.map(m => `${m.role}: ${m.content}`).join('\n\n'),
+        subject: convTitle.slice(0, 100),
+        description,
         category: suggestedDepartment || 'splošno',
       });
 
