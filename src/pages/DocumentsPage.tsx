@@ -72,6 +72,19 @@ const DocumentsPage = () => {
     loadDocuments();
   };
 
+  const handleDeleteDocument = async () => {
+    if (!deleteDocId) return;
+    const { error } = await supabase.from('documents').delete().eq('id', deleteDocId);
+    if (error) {
+      toast.error('Napaka pri brisanju dokumenta');
+      return;
+    }
+    toast.success('Dokument uspešno izbrisan');
+    if (selectedDoc?.id === deleteDocId) setSelectedDoc(null);
+    setDeleteDocId(null);
+    loadDocuments();
+  };
+
   const filtered = documents.filter(d => {
     const matchSearch = d.title.toLowerCase().includes(search.toLowerCase()) ||
       d.content.toLowerCase().includes(search.toLowerCase());
