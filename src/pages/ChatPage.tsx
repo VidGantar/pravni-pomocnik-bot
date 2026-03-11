@@ -108,7 +108,7 @@ const ChatPage = () => {
       .single();
 
     if (userMsg) {
-      setMessages(prev => [...prev, userMsg as Message]);
+      setMessages(prev => [...prev, userMsg as unknown as Message]);
     }
 
     // Update conversation title if first message
