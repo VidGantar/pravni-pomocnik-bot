@@ -46,7 +46,7 @@ const Login = () => {
     <div className="flex min-h-screen items-center justify-center bg-background p-4">
       <div className="w-full max-w-md animate-fade-in">
         <div className="mb-8 text-center">
-          <img src={logo} alt="ePTP logo" className="mx-auto mb-4 h-16 w-16 rounded-2xl" />
+          <img src={logo} alt="ePTP logo" className="mx-auto mb-4 h-16 object-contain" />
           <h1 className="font-display text-3xl font-bold text-foreground">
             ePTP Pomočnik
           </h1>
