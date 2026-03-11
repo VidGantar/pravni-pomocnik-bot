@@ -56,7 +56,7 @@ Deno.serve(async (req) => {
           <!-- Header -->
           <tr>
             <td style="background-color:#1e293b;padding:24px 32px;">
-              <h1 style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">DOdv Pomočnik</h1>
+              <h1 style="margin:0;color:#ffffff;font-size:18px;font-weight:600;">ePTP Pomočnik</h1>
             </td>
           </tr>
           <!-- Body -->
