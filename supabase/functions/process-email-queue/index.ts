@@ -168,8 +168,8 @@ Deno.serve(async (req) => {
           {
             run_id: payload.run_id || crypto.randomUUID(),
             to: payload.to,
-            from: payload.from,
-            sender_domain: payload.sender_domain,
+            from: payload.from || 'ePTP Pomočnik <obvestila@eptp.click>',
+            sender_domain: payload.sender_domain || 'eptp.click',
             subject: payload.subject,
             html: payload.html,
             text: payload.text,
