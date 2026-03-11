@@ -101,27 +101,30 @@ Deno.serve(async (req) => {
 </body>
 </html>`;
 
-    // Try to send via Lovable email queue (pgmq)
-    // If email queue is not set up, try direct RPC
+    // Send via pgmq transactional email queue
     let emailSent = false;
 
     try {
-      const { error: rpcError } = await supabase.rpc("send_email_message" as any, {
-        message: {
+      const { error: queueError } = await supabase.rpc("enqueue_email" as any, {
+        queue_name: "transactional_emails",
+        payload: {
           to: profile.email,
-          subject: "Nova zahteva na portalu",
+          subject: `Nova zahteva: ${ticket_subject}`,
           html: htmlBody,
         },
       });
-      if (!rpcError) emailSent = true;
-      else console.error("RPC send_email_message error:", rpcError);
+      if (!queueError) {
+        emailSent = true;
+        console.log(`Email queued for ${profile.email}`);
+      } else {
+        console.error("enqueue_email error:", queueError);
+      }
     } catch (e) {
-      console.error("RPC not available:", e);
+      console.error("Queue send failed:", e);
     }
 
-    // Fallback: log that email would be sent
     if (!emailSent) {
-      console.log(`Email notification would be sent to ${profile.email} for ticket: ${ticket_subject}`);
+      console.log(`Email could not be queued for ${profile.email}`);
     }
 
     return new Response(
