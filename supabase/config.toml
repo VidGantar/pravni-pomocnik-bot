@@ -2,6 +2,3 @@ project_id = "kssbxmudxbifxndnyhsq"
 
 [functions.chat]
 verify_jwt = false
-
-[functions.seed-support]
-verify_jwt = false
