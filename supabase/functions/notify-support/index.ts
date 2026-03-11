@@ -111,6 +111,7 @@ Deno.serve(async (req) => {
           to: profile.email,
           subject: `Nova zahteva: ${ticket_subject}`,
           html: htmlBody,
+          purpose: "transactional",
         },
       });
       if (!queueError) {
