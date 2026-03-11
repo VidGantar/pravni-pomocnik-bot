@@ -26,6 +26,7 @@ interface Conversation {
   status: string;
   created_at: string;
   updated_at: string;
+  needs_support?: boolean;
 }
 
 const ChatPage = () => {
@@ -57,6 +58,7 @@ const ChatPage = () => {
   useEffect(() => {
     if (!activeConvId) {
       setMessages([]);
+      setShowContactSupport(false);
       return;
     }
     const load = async () => {
@@ -66,6 +68,14 @@ const ChatPage = () => {
         .eq('conversation_id', activeConvId)
         .order('created_at', { ascending: true });
       if (data) setMessages(data as unknown as Message[]);
+
+      // Restore needs_support flag from DB
+      const conv = conversations.find(c => c.id === activeConvId);
+      if (conv && (conv as any).needs_support && conv.status !== 'pending_support' && !conv.status?.startsWith('resolved')) {
+        setShowContactSupport(true);
+      } else {
+        setShowContactSupport(false);
+      }
     };
     load();
   }, [activeConvId]);
@@ -171,6 +181,10 @@ const ChatPage = () => {
 
       if (!canAnswer) {
         setShowContactSupport(true);
+        await supabase
+          .from('conversations')
+          .update({ needs_support: true })
+          .eq('id', convId);
       }
     } catch (err) {
       console.error('Chat error:', err);
@@ -196,6 +210,10 @@ const ChatPage = () => {
 
       if (!fallbackReply.canAnswer) {
         setShowContactSupport(true);
+        await supabase
+          .from('conversations')
+          .update({ needs_support: true })
+          .eq('id', convId);
       }
     } finally {
       setIsTyping(false);

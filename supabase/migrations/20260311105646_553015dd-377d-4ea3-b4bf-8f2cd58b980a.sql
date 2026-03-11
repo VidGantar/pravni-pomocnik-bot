@@ -1,0 +1,1 @@
+ALTER TABLE public.conversations ADD COLUMN needs_support boolean NOT NULL DEFAULT false;
