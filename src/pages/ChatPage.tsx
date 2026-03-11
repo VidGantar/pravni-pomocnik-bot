@@ -230,9 +230,8 @@ const ChatPage = () => {
 
     setShowContactSupport(false);
     setShowSupportDialog(false);
-    toast.success('Zahteva za podporo je bila poslana. Podpora se bo oglasila.');
 
-    // Fetch support user profile for the message
+    // Fetch support user profile for the message and mailto
     const { data: supportProfile } = await supabase
       .from('profiles')
       .select('full_name, email, department')
@@ -242,6 +241,23 @@ const ChatPage = () => {
     const supportName = supportProfile?.full_name || supportProfile?.email || 'podporniku';
     const supportContact = supportProfile?.email || '';
     const supportDept = supportProfile?.department || '';
+
+    // Open mailto link with pre-filled email
+    if (supportContact) {
+      const lastUserMsg = [...messages].reverse().find(m => m.role === 'user');
+      const emailSubject = `[DOdv Podpora] ${lastUserMsg?.content.slice(0, 80) || 'Zahteva za podporo'}`;
+      const conversationSummary = messages
+        .slice(-6)
+        .map(m => `${m.role === 'user' ? 'Uporabnik' : 'Pomočnik'}: ${m.content}`)
+        .join('\n\n');
+      const appUrl = `${window.location.origin}/support`;
+      const emailBody = `Pozdravljeni ${supportName},\n\nPrejet je bil zahtevek za podporo.\n\nKategorija: ${suggestedDepartment || 'Splošno'}\n\nPovzetek pogovora:\n${conversationSummary}\n\n---\nZahtevek lahko rešite v aplikaciji:\n${appUrl}\n\nLep pozdrav`;
+
+      const mailtoLink = `mailto:${encodeURIComponent(supportContact)}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+      window.open(mailtoLink, '_blank');
+    }
+
+    toast.success('Zahteva za podporo je bila ustvarjena. Odprl se je email za pošiljanje.');
 
     // Use special markup: [[name||contact||dept]] for hover support
     const content = `📋 Vaša zahteva je bila posredovana [[${supportName}||${supportContact}||${supportDept}]] v podporni službi. Obvestili vas bomo, ko bo rešena.`;
