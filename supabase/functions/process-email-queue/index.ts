@@ -168,8 +168,8 @@ Deno.serve(async (req) => {
       }
 
       try {
-        const emailRunId = payload.run_id || projectId || workspaceId
-        console.log('Sending email with run_id:', emailRunId, 'to:', payload.to)
+        const emailRunId = payload.run_id || Deno.env.get('DENO_DEPLOYMENT_ID') || ''
+        console.log('Sending with run_id:', emailRunId, 'deployment:', Deno.env.get('DENO_DEPLOYMENT_ID'))
         await sendLovableEmail(
           {
             run_id: emailRunId,
