@@ -130,6 +130,7 @@ const ContactSupportDialog: React.FC<ContactSupportDialogProps> = ({
                   ))}
                 </SelectContent>
               </Select>
+            </div>
 
             {suggestedDepartment && (
               <p className="rounded-md bg-accent/50 px-3 py-2 text-xs text-accent-foreground">
