@@ -236,7 +236,7 @@ const ChatPage = () => {
       .select()
       .single();
 
-    if (sysMsg) setMessages(prev => [...prev, sysMsg as Message]);
+    if (sysMsg) setMessages(prev => [...prev, sysMsg as unknown as Message]);
   };
 
   const activeConv = conversations.find(c => c.id === activeConvId);
