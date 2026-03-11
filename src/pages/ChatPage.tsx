@@ -9,7 +9,7 @@ import TypingIndicator from '@/components/TypingIndicator';
 import ContactSupportDialog from '@/components/ContactSupportDialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { HeadphonesIcon, MessageCircle, CheckCircle2 } from 'lucide-react';
+import { HeadphonesIcon, MessageCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Message {
@@ -436,8 +436,28 @@ const ChatPage = () => {
               />
             </div>
           ) : (
-            <div className="border-t border-border bg-success/5 px-6 py-3 text-center text-sm text-success">
-              ✓ Ta pogovor je bil rešen
+            <div className="flex items-center justify-center gap-4 border-t border-border bg-success/5 px-6 py-3">
+              <span className="text-sm text-success">✓ Ta pogovor je bil rešen</span>
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-1.5 border-primary/30 text-primary hover:bg-primary/10"
+                onClick={async () => {
+                  if (!activeConvId) return;
+                  await supabase
+                    .from('conversations')
+                    .update({ status: 'active', needs_support: false })
+                    .eq('id', activeConvId);
+                  setConversations(prev =>
+                    prev.map(c => c.id === activeConvId ? { ...c, status: 'active', needs_support: false } : c)
+                  );
+                  setShowContactSupport(false);
+                  toast.success('Pogovor je ponovno aktiven.');
+                }}
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Nadaljuj pogovor
+              </Button>
             </div>
           )}
         </div>
