@@ -8,11 +8,15 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { FileText, Plus, Search, FolderOpen } from 'lucide-react';
+import { FileText, Plus, Search, FolderOpen, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Document {
@@ -34,6 +38,7 @@ const DocumentsPage = () => {
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newDoc, setNewDoc] = useState({ title: '', content: '', category: 'splošno' });
+  const [deleteDocId, setDeleteDocId] = useState<string | null>(null);
 
   useEffect(() => {
     loadDocuments();
@@ -64,6 +69,19 @@ const DocumentsPage = () => {
     toast.success('Dokument uspešno dodan');
     setShowAddDialog(false);
     setNewDoc({ title: '', content: '', category: 'splošno' });
+    loadDocuments();
+  };
+
+  const handleDeleteDocument = async () => {
+    if (!deleteDocId) return;
+    const { error } = await supabase.from('documents').delete().eq('id', deleteDocId);
+    if (error) {
+      toast.error('Napaka pri brisanju dokumenta');
+      return;
+    }
+    toast.success('Dokument uspešno izbrisan');
+    if (selectedDoc?.id === deleteDocId) setSelectedDoc(null);
+    setDeleteDocId(null);
     loadDocuments();
   };
 
@@ -170,7 +188,7 @@ const DocumentsPage = () => {
                 >
                   <div className="flex items-start gap-2">
                     <FolderOpen className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{doc.title}</p>
                       <div className="mt-1 flex items-center gap-2">
                         <Badge variant="secondary" className="text-[10px]">{doc.category}</Badge>
@@ -179,6 +197,19 @@ const DocumentsPage = () => {
                         </span>
                       </div>
                     </div>
+                    {role === 'admin' && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteDocId(doc.id);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </button>
               ))}
@@ -216,6 +247,23 @@ const DocumentsPage = () => {
           </div>
         </div>
       </div>
+
+      <AlertDialog open={!!deleteDocId} onOpenChange={(open) => !open && setDeleteDocId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Izbriši dokument?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Ta dejanje je nepreklicno. Dokument bo trajno odstranjen iz baze znanja.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Prekliči</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteDocument} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Izbriši
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </AppLayout>
   );
 };
