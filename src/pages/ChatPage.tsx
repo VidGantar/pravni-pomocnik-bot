@@ -26,6 +26,7 @@ interface Conversation {
   status: string;
   created_at: string;
   updated_at: string;
+  needs_support?: boolean;
 }
 
 const ChatPage = () => {
