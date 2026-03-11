@@ -31,6 +31,7 @@ const SupportDashboard = () => {
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [resolveTicket, setResolveTicket] = useState<TicketRow | null>(null);
   const [resolution, setResolution] = useState('');
+  const [isResolving, setIsResolving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -52,7 +53,10 @@ const SupportDashboard = () => {
       toast.error('Vnesite rešitev');
       return;
     }
+    if (isResolving) return;
+    setIsResolving(true);
 
+    try {
     // Update ticket
     await supabase
       .from('tickets')
@@ -103,7 +107,9 @@ const SupportDashboard = () => {
         .eq('id', pastDoc.id);
     }
 
-    toast.success('Zahteva označena kot rešena');
+    } finally {
+      setIsResolving(false);
+    }
     setResolveTicket(null);
     setResolution('');
     loadTickets();
@@ -212,9 +218,9 @@ const SupportDashboard = () => {
                   rows={4}
                 />
               </div>
-              <Button onClick={handleResolve} className="w-full gap-2">
+              <Button onClick={handleResolve} className="w-full gap-2" disabled={isResolving}>
                 <CheckCircle2 className="h-4 w-4" />
-                Označi kot rešeno
+                {isResolving ? 'Reševanje...' : 'Označi kot rešeno'}
               </Button>
             </div>
           </DialogContent>
