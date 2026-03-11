@@ -218,9 +218,9 @@ const SupportDashboard = () => {
                   rows={4}
                 />
               </div>
-              <Button onClick={handleResolve} className="w-full gap-2">
+              <Button onClick={handleResolve} className="w-full gap-2" disabled={isResolving}>
                 <CheckCircle2 className="h-4 w-4" />
-                Označi kot rešeno
+                {isResolving ? 'Reševanje...' : 'Označi kot rešeno'}
               </Button>
             </div>
           </DialogContent>
