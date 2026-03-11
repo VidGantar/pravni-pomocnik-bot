@@ -276,6 +276,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      reassign_ticket: {
+        Args: { _new_assignee: string; _ticket_id: string }
+        Returns: undefined
+      }
     }
     Enums: {
       app_role: "admin" | "support" | "user"

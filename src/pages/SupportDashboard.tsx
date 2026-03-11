@@ -98,18 +98,16 @@ const SupportDashboard = () => {
     setIsReassigning(true);
 
     try {
-      // Update ticket assignment
-      await supabase
-        .from('tickets')
-        .update({ assigned_to: selectedSupportUser })
-        .eq('id', reassignTicket.id);
+      // Use SECURITY DEFINER function to bypass RLS for reassignment
+      const { error: rpcError } = await supabase.rpc('reassign_ticket', {
+        _ticket_id: reassignTicket.id,
+        _new_assignee: selectedSupportUser,
+      });
 
-      // Update conversation assignment if linked
-      if (reassignTicket.conversation_id) {
-        await supabase
-          .from('conversations')
-          .update({ assigned_to: selectedSupportUser })
-          .eq('id', reassignTicket.conversation_id);
+      if (rpcError) {
+        console.error('Reassign error:', rpcError);
+        toast.error('Napaka pri prenosu zahteve');
+        return;
       }
 
       // Send email notification to new support user
