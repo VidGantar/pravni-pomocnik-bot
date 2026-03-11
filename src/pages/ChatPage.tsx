@@ -364,7 +364,7 @@ const ChatPage = () => {
           {/* Input */}
           {!isResolved ? (
             <div>
-              {activeConvId && messages.length > 0 && activeConv?.status !== 'pending_support' && !isTyping && (
+              {activeConvId && messages.some(m => m.role === 'assistant') && activeConv?.status !== 'pending_support' && !isTyping && (
                 <div className="flex justify-center border-t border-border bg-card px-4 pt-2">
                   <Button
                     onClick={() => setShowSupportDialog(true)}
