@@ -281,6 +281,17 @@ const ChatPage = () => {
                 {activeConv?.title || 'Nov pogovor'}
               </h2>
             </div>
+            {activeConvId && !isResolved && messages.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResolveByChat}
+                className="gap-1.5 text-success hover:bg-success/10 hover:text-success"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Označi kot rešeno
+              </Button>
+            )}
           </div>
 
           {/* Messages */}
