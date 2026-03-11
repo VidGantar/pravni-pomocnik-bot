@@ -302,7 +302,7 @@ const ChatPage = () => {
               {showContactSupport && !isResolved && (
                 <div className="flex justify-center animate-fade-in">
                   <Button
-                    onClick={handleContactSupport}
+                    onClick={() => setShowSupportDialog(true)}
                     variant="outline"
                     className="gap-2 border-pending/30 text-pending hover:bg-pending/10"
                   >
@@ -311,6 +311,13 @@ const ChatPage = () => {
                   </Button>
                 </div>
               )}
+
+              <ContactSupportDialog
+                open={showSupportDialog}
+                onOpenChange={setShowSupportDialog}
+                onConfirm={handleContactSupport}
+                suggestedDepartment={suggestedDepartment}
+              />
 
               <div ref={messagesEndRef} />
             </div>
