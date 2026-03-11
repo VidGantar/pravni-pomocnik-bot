@@ -232,13 +232,27 @@ const ChatPage = () => {
     setShowSupportDialog(false);
     toast.success('Zahteva za podporo je bila poslana. Podpora se bo oglasila.');
 
+    // Fetch support user profile for the message
+    const { data: supportProfile } = await supabase
+      .from('profiles')
+      .select('full_name, email, department')
+      .eq('user_id', supportUserId)
+      .single();
+
+    const supportName = supportProfile?.full_name || supportProfile?.email || 'podporniku';
+    const supportContact = supportProfile?.email || '';
+    const supportDept = supportProfile?.department || '';
+
+    // Use special markup: [[name||contact||dept]] for hover support
+    const content = `📋 Vaša zahteva je bila posredovana [[${supportName}||${supportContact}||${supportDept}]] v podporni službi. Obvestili vas bomo, ko bo rešena.`;
+
     // Add system message
     const { data: sysMsg } = await supabase
       .from('messages')
       .insert({
         conversation_id: activeConvId,
         role: 'assistant',
-        content: '📋 Vaša zahteva je bila posredovana podporni službi. Obvestili vas bomo, ko bo rešena.',
+        content,
       })
       .select()
       .single();
