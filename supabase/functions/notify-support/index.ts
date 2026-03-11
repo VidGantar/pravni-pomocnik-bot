@@ -105,9 +105,9 @@ Deno.serve(async (req) => {
     let emailSent = false;
 
     try {
-      const { error: queueError } = await supabase.rpc("send" as any, {
+      const { error: queueError } = await supabase.rpc("enqueue_email" as any, {
         queue_name: "transactional_emails",
-        msg: {
+        payload: {
           to: profile.email,
           subject: `Nova zahteva: ${ticket_subject}`,
           html: htmlBody,
@@ -117,8 +117,11 @@ Deno.serve(async (req) => {
         emailSent = true;
         console.log(`Email queued for ${profile.email}`);
       } else {
-        console.error("pgmq send error:", queueError);
+        console.error("enqueue_email error:", queueError);
       }
+    } catch (e) {
+      console.error("Queue send failed:", e);
+    }
     } catch (e) {
       console.error("Queue send failed:", e);
     }
