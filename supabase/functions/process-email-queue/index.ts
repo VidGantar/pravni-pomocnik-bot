@@ -172,7 +172,7 @@ Deno.serve(async (req) => {
             sender_domain: payload.sender_domain || 'eptp.click',
             subject: payload.subject,
             html: payload.html,
-            text: payload.text,
+            text: payload.text || payload.subject || '',
             purpose: payload.purpose || 'transactional',
             label: payload.label,
             external_id: payload.external_id,
