@@ -87,7 +87,7 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        from: "onboarding@resend.dev",
+        from: "support@notify.eptp.click",
         to: [NOTIFY_EMAIL],
         subject: `Nova zahteva: ${ticket_subject}`,
         html: htmlBody,
