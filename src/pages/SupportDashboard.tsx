@@ -53,7 +53,10 @@ const SupportDashboard = () => {
       toast.error('Vnesite rešitev');
       return;
     }
+    if (isResolving) return;
+    setIsResolving(true);
 
+    try {
     // Update ticket
     await supabase
       .from('tickets')
