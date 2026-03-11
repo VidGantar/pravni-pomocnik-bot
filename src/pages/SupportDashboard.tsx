@@ -87,6 +87,22 @@ const SupportDashboard = () => {
       category: resolveTicket.category,
     });
 
+    // Append to "Pretekla vprašanja" document
+    const { data: pastDoc } = await supabase
+      .from('documents')
+      .select('id, content')
+      .eq('category', 'pretekla-vprasanja')
+      .single();
+
+    if (pastDoc) {
+      const date = new Date().toLocaleDateString('sl-SI');
+      const entry = `\n**${date} — ${resolveTicket.category}**\n**Vprašanje:** ${resolveTicket.subject}\n**Rešitev:** ${resolution}\n\n---\n`;
+      await supabase
+        .from('documents')
+        .update({ content: pastDoc.content + entry })
+        .eq('id', pastDoc.id);
+    }
+
     toast.success('Zahteva označena kot rešena');
     setResolveTicket(null);
     setResolution('');
