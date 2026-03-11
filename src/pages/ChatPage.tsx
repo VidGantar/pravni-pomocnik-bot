@@ -9,7 +9,7 @@ import TypingIndicator from '@/components/TypingIndicator';
 import ContactSupportDialog from '@/components/ContactSupportDialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { HeadphonesIcon, MessageCircle } from 'lucide-react';
+import { HeadphonesIcon, MessageCircle, CheckCircle2 } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Message {
@@ -249,6 +249,19 @@ const ChatPage = () => {
   const activeConv = conversations.find(c => c.id === activeConvId);
   const isResolved = activeConv?.status?.startsWith('resolved');
 
+  const handleResolveByChat = async () => {
+    if (!activeConvId) return;
+    await supabase
+      .from('conversations')
+      .update({ status: 'resolved_chat' })
+      .eq('id', activeConvId);
+    setConversations(prev =>
+      prev.map(c => c.id === activeConvId ? { ...c, status: 'resolved_chat' } : c)
+    );
+    setShowContactSupport(false);
+    toast.success('Pogovor je bil označen kot rešen.');
+  };
+
   return (
     <AppLayout>
       <div className="flex h-full">
@@ -268,6 +281,17 @@ const ChatPage = () => {
                 {activeConv?.title || 'Nov pogovor'}
               </h2>
             </div>
+            {activeConvId && !isResolved && messages.length > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleResolveByChat}
+                className="gap-1.5 text-success hover:bg-success/10 hover:text-success"
+              >
+                <CheckCircle2 className="h-4 w-4" />
+                Označi kot rešeno
+              </Button>
+            )}
           </div>
 
           {/* Messages */}
