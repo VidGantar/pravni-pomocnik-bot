@@ -147,6 +147,8 @@ const ChatPage = () => {
       const assistantContent = fnData?.reply || 'Oprostite, nisem mogel obdelati vašega vprašanja.';
       const sources = fnData?.sources || null;
       const canAnswer = fnData?.can_answer !== false;
+      const dept = fnData?.suggested_department || null;
+      setSuggestedDepartment(dept);
 
       // Save assistant message
       const { data: assistantMsg } = await supabase
