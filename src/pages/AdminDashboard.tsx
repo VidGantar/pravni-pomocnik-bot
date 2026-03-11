@@ -11,8 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   LayoutDashboard, Users, Ticket, AlertCircle, CheckCircle2, Clock,
-  UserPlus, Trash2,
+  UserPlus, Trash2, MessageCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -38,6 +42,15 @@ interface ProfileRow {
   department: string | null;
 }
 
+interface ConversationRow {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+}
+
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   pending: { label: 'Čakajoč', icon: AlertCircle, color: 'bg-pending/10 text-pending border-pending/20' },
   in_progress: { label: 'V delu', icon: Clock, color: 'bg-primary/10 text-primary border-primary/20' },
@@ -47,20 +60,37 @@ const statusConfig: Record<string, { label: string; icon: React.ElementType; col
 const AdminDashboard = () => {
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
+  const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState({ email: '', password: '', username: '', role: 'user' as string });
+  const [deleteConvId, setDeleteConvId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    const [ticketsRes, profilesRes] = await Promise.all([
+    const [ticketsRes, profilesRes, convsRes] = await Promise.all([
       supabase.from('tickets').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*'),
+      supabase.from('conversations').select('*')
+        .in('status', ['pending_support', 'resolved_support'])
+        .order('updated_at', { ascending: false }),
     ]);
     if (ticketsRes.data) setTickets(ticketsRes.data as TicketRow[]);
     if (profilesRes.data) setProfiles(profilesRes.data as ProfileRow[]);
+    if (convsRes.data) setConversations(convsRes.data as ConversationRow[]);
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!deleteConvId) return;
+    // Delete messages first, then conversation
+    await supabase.from('messages').delete().eq('conversation_id', deleteConvId);
+    await supabase.from('tickets').delete().eq('conversation_id', deleteConvId);
+    await supabase.from('conversations').delete().eq('id', deleteConvId);
+    setConversations(prev => prev.filter(c => c.id !== deleteConvId));
+    setDeleteConvId(null);
+    toast.success('Pogovor je bil izbrisan');
   };
 
   const handleAddUser = async () => {
@@ -144,6 +174,10 @@ const AdminDashboard = () => {
                   <Ticket className="h-4 w-4" />
                   Zahteve ({tickets.length})
                 </TabsTrigger>
+              <TabsTrigger value="conversations" className="gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Pogovori ({conversations.length})
+                </TabsTrigger>
                 <TabsTrigger value="users" className="gap-2">
                   <Users className="h-4 w-4" />
                   Uporabniki ({profiles.length})
@@ -179,6 +213,49 @@ const AdminDashboard = () => {
                     <p className="py-8 text-center text-sm text-muted-foreground">Ni zahtev</p>
                   )}
                 </div>
+              </TabsContent>
+
+              <TabsContent value="conversations" className="mt-4 space-y-2">
+                {conversations.map(conv => {
+                  const convStatus = conv.status === 'pending_support'
+                    ? { label: 'Čaka podporo', className: 'bg-pending/10 text-pending border-pending/20' }
+                    : { label: 'Rešen (podpora)', className: 'bg-success/10 text-success border-success/20' };
+                  const ownerProfile = profiles.find(p => p.user_id === conv.user_id);
+                  return (
+                    <Card key={conv.id} className="border-border/50">
+                      <CardContent className="flex items-center gap-4 p-4">
+                        <MessageCircle className="h-5 w-5 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">{conv.title}</p>
+                          <div className="mt-1 flex items-center gap-2">
+                            <Badge variant="outline" className={convStatus.className}>
+                              {convStatus.label}
+                            </Badge>
+                            {ownerProfile && (
+                              <span className="text-[10px] text-muted-foreground">
+                                {ownerProfile.username}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(conv.updated_at).toLocaleDateString('sl-SI')}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => setDeleteConvId(conv.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                {conversations.length === 0 && (
+                  <p className="py-8 text-center text-sm text-muted-foreground">Ni pogovorov s podporo</p>
+                )}
               </TabsContent>
 
               <TabsContent value="users" className="mt-4">
@@ -240,6 +317,24 @@ const AdminDashboard = () => {
             </Tabs>
           </div>
         </ScrollArea>
+
+        {/* Delete confirmation dialog */}
+        <AlertDialog open={!!deleteConvId} onOpenChange={open => !open && setDeleteConvId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Izbriši pogovor?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Ta pogovor in vsa pripadajoča sporočila bodo trajno izbrisana. Tega dejanja ni mogoče razveljaviti.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Prekliči</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConversation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Izbriši
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </AppLayout>
   );
