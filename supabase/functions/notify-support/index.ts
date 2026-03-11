@@ -91,7 +91,7 @@ Deno.serve(async (req) => {
           <!-- Footer -->
           <tr>
             <td style="padding:16px 32px;border-top:1px solid #e2e8f0;">
-              <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">To sporočilo je bilo samodejno poslano iz portala DOdv Pomočnik.</p>
+              <p style="margin:0;color:#94a3b8;font-size:12px;text-align:center;">To sporočilo je bilo samodejno poslano iz portala ePTP Pomočnik.</p>
             </td>
           </tr>
         </table>
