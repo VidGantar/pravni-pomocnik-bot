@@ -363,15 +363,30 @@ const ChatPage = () => {
 
           {/* Input */}
           {!isResolved ? (
-            <ChatInput
-              onSend={handleSend}
-              disabled={isTyping || activeConv?.status === 'pending_support'}
-              placeholder={
-                activeConv?.status === 'pending_support'
-                  ? 'Čakate na odgovor podpore...'
-                  : 'Vnesite vaše vprašanje...'
-              }
-            />
+            <div>
+              {activeConvId && messages.length > 0 && activeConv?.status !== 'pending_support' && !isTyping && (
+                <div className="flex justify-center border-t border-border bg-card px-4 pt-2">
+                  <Button
+                    onClick={() => setShowSupportDialog(true)}
+                    variant="ghost"
+                    size="sm"
+                    className="gap-1.5 text-xs text-muted-foreground hover:text-pending"
+                  >
+                    <HeadphonesIcon className="h-3.5 w-3.5" />
+                    Kontaktiraj podporo
+                  </Button>
+                </div>
+              )}
+              <ChatInput
+                onSend={handleSend}
+                disabled={isTyping || activeConv?.status === 'pending_support'}
+                placeholder={
+                  activeConv?.status === 'pending_support'
+                    ? 'Čakate na odgovor podpore...'
+                    : 'Vnesite vaše vprašanje...'
+                }
+              />
+            </div>
           ) : (
             <div className="border-t border-border bg-success/5 px-6 py-3 text-center text-sm text-success">
               ✓ Ta pogovor je bil rešen
