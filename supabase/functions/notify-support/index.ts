@@ -122,9 +122,6 @@ Deno.serve(async (req) => {
     } catch (e) {
       console.error("Queue send failed:", e);
     }
-    } catch (e) {
-      console.error("Queue send failed:", e);
-    }
 
     if (!emailSent) {
       console.log(`Email could not be queued for ${profile.email}`);
