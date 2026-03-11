@@ -166,7 +166,7 @@ Deno.serve(async (req) => {
       try {
         await sendLovableEmail(
           {
-            run_id: payload.run_id || crypto.randomUUID(),
+            run_id: payload.run_id || '4f177b1a-10a9-43e9-9bda-4d3890b9b170',
             to: payload.to,
             from: payload.from || 'ePTP Pomočnik <obvestila@eptp.click>',
             sender_domain: payload.sender_domain || 'eptp.click',
