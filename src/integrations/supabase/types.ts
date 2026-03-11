@@ -19,6 +19,7 @@ export type Database = {
           assigned_to: string | null
           created_at: string
           id: string
+          needs_support: boolean
           status: string
           title: string
           updated_at: string
@@ -28,6 +29,7 @@ export type Database = {
           assigned_to?: string | null
           created_at?: string
           id?: string
+          needs_support?: boolean
           status?: string
           title?: string
           updated_at?: string
@@ -37,6 +39,7 @@ export type Database = {
           assigned_to?: string | null
           created_at?: string
           id?: string
+          needs_support?: boolean
           status?: string
           title?: string
           updated_at?: string
