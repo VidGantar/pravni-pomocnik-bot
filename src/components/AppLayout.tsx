@@ -3,7 +3,7 @@ import logo from '@/assets/logo.png';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { MessageCircle, FileText, LayoutDashboard, HeadphonesIcon, LogOut, Shield, User } from 'lucide-react';
+import { MessageCircle, FileText, LayoutDashboard, HeadphonesIcon, LogOut, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
 
