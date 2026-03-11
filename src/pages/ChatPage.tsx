@@ -35,6 +35,8 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [showContactSupport, setShowContactSupport] = useState(false);
+  const [showSupportDialog, setShowSupportDialog] = useState(false);
+  const [suggestedDepartment, setSuggestedDepartment] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch conversations
