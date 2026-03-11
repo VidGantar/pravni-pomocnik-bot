@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import AppLayout from '@/components/AppLayout';
+import { renderMarkdown } from '@/lib/renderMarkdown';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
@@ -200,8 +201,8 @@ const DocumentsPage = () => {
                   </span>
                 </div>
                 <h2 className="font-display text-2xl font-bold text-foreground">{selectedDoc.title}</h2>
-                <div className="mt-6 whitespace-pre-wrap text-sm leading-relaxed text-foreground/80">
-                  {selectedDoc.content}
+                <div className="mt-6 text-sm leading-relaxed text-foreground/80">
+                  {renderMarkdown(selectedDoc.content)}
                 </div>
               </div>
             ) : (
