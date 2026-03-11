@@ -95,8 +95,8 @@ Deno.serve(async (req) => {
 
     if (apiKey) {
       try {
-        console.log(`Sending email directly to ${NOTIFY_EMAIL} with run_id: ${runId}`);
-        await sendLovableEmail(
+        console.log(`Sending email directly to ${NOTIFY_EMAIL}`);
+        const result = await sendLovableEmail(
           {
             run_id: runId,
             to: NOTIFY_EMAIL,
