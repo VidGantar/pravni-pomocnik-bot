@@ -38,6 +38,7 @@ const DocumentsPage = () => {
   const [selectedDoc, setSelectedDoc] = useState<Document | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [newDoc, setNewDoc] = useState({ title: '', content: '', category: 'splošno' });
+  const [deleteDocId, setDeleteDocId] = useState<string | null>(null);
 
   useEffect(() => {
     loadDocuments();
