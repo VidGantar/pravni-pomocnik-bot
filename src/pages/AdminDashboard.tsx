@@ -42,6 +42,15 @@ interface ProfileRow {
   department: string | null;
 }
 
+interface ConversationRow {
+  id: string;
+  title: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  user_id: string;
+}
+
 const statusConfig: Record<string, { label: string; icon: React.ElementType; color: string }> = {
   pending: { label: 'Čakajoč', icon: AlertCircle, color: 'bg-pending/10 text-pending border-pending/20' },
   in_progress: { label: 'V delu', icon: Clock, color: 'bg-primary/10 text-primary border-primary/20' },
