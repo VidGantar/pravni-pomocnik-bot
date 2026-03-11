@@ -159,7 +159,7 @@ const ChatPage = () => {
 
       if (assistantMsg) {
         setMessages(prev => [...prev, {
-          ...assistantMsg as Message,
+          ...(assistantMsg as unknown as Message),
           sources: sources,
         }]);
       }
