@@ -6,6 +6,7 @@ import ChatSidebar from '@/components/ChatSidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import TypingIndicator from '@/components/TypingIndicator';
+import ContactSupportDialog from '@/components/ContactSupportDialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { HeadphonesIcon, MessageCircle } from 'lucide-react';
