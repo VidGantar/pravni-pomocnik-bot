@@ -52,7 +52,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
     <div className="flex h-screen bg-background">
       <aside className="flex w-64 flex-col bg-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
-          <img src={logo} alt="ePTP logo" className="h-10 w-10 rounded-xl" />
+          <img src={logo} alt="ePTP logo" className="h-10 object-contain" />
           <div>
             <h1 className="font-display text-lg font-bold text-sidebar-foreground">ePTP</h1>
             <p className="text-xs text-sidebar-foreground/60">Pomočnik</p>
