@@ -62,7 +62,7 @@ const ChatSidebar: React.FC<ChatSidebarProps> = ({ conversations, activeId, onSe
               >
                 <div className="flex items-center gap-2">
                   <MessageCircle className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                  <span className="truncate text-sm font-medium text-foreground">
+                  <span className="text-sm font-medium text-foreground overflow-hidden text-ellipsis whitespace-nowrap">
                     {conv.title}
                   </span>
                 </div>
