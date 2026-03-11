@@ -1,13 +1,30 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { Navigate, Link, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MessageCircle, FileText, LayoutDashboard, HeadphonesIcon, LogOut, Shield, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user, profile, role, loading, signOut } = useAuth();
   const location = useLocation();
+  const [openTicketCount, setOpenTicketCount] = useState(0);
+
+  useEffect(() => {
+    if (!user || role !== 'support') return;
+    const fetchCount = async () => {
+      const { count } = await supabase
+        .from('tickets')
+        .select('*', { count: 'exact', head: true })
+        .eq('assigned_to', user.id)
+        .neq('status', 'resolved');
+      setOpenTicketCount(count ?? 0);
+    };
+    fetchCount();
+    const interval = setInterval(fetchCount, 30000);
+    return () => clearInterval(interval);
+  }, [user, role]);
 
   if (loading) {
     return (
@@ -22,7 +39,7 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const navItems = [
     { path: '/', label: 'Klepet', icon: MessageCircle, roles: ['user', 'admin', 'support'] },
     { path: '/dokumenti', label: 'Dokumenti', icon: FileText, roles: ['user', 'admin', 'support'] },
-    { path: '/podpora', label: 'Moje zahteve', icon: HeadphonesIcon, roles: ['support'] },
+    { path: '/podpora', label: 'Moje zahteve', icon: HeadphonesIcon, roles: ['support'], badge: openTicketCount },
     { path: '/nadzorna', label: 'Nadzorna plošča', icon: LayoutDashboard, roles: ['admin'] },
   ];
 
@@ -32,7 +49,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   return (
     <div className="flex h-screen bg-background">
-      {/* Sidebar */}
       <aside className="flex w-64 flex-col bg-sidebar text-sidebar-foreground">
         <div className="flex items-center gap-3 border-b border-sidebar-border px-5 py-5">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-sidebar-primary">
@@ -58,6 +74,11 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             >
               <item.icon className="h-4 w-4" />
               {item.label}
+              {'badge' in item && item.badge != null && item.badge > 0 && (
+                <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-destructive-foreground">
+                  {item.badge}
+                </span>
+              )}
             </Link>
           ))}
         </nav>
@@ -85,7 +106,6 @@ const AppLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
       </aside>
 
-      {/* Main content */}
       <main className="flex-1 overflow-hidden">
         {children}
       </main>
