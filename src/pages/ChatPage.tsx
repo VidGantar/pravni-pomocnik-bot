@@ -15,7 +15,7 @@ interface Message {
   id: string;
   role: 'user' | 'assistant' | 'support';
   content: string;
-  sources?: { title: string; excerpt?: string }[] | null;
+  sources?: unknown;
   created_at: string;
 }
 
