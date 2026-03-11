@@ -21,7 +21,7 @@ interface ChatMessageProps {
   timestamp?: string;
 }
 
-// Parse [[name||email||dept]] markup into rich elements
+// Parse [[name||email||dept]] markup then render markdown
 const renderContent = (text: string) => {
   const regex = /\[\[(.+?)\|\|(.+?)\|\|(.+?)\]\]/g;
   const parts: React.ReactNode[] = [];
@@ -30,7 +30,7 @@ const renderContent = (text: string) => {
 
   while ((match = regex.exec(text)) !== null) {
     if (match.index > lastIndex) {
-      parts.push(text.slice(lastIndex, match.index));
+      parts.push(...renderMarkdown(text.slice(lastIndex, match.index)));
     }
     const [, name, email, dept] = match;
     parts.push(
@@ -52,10 +52,10 @@ const renderContent = (text: string) => {
   }
 
   if (lastIndex < text.length) {
-    parts.push(text.slice(lastIndex));
+    parts.push(...renderMarkdown(text.slice(lastIndex)));
   }
 
-  return parts.length > 0 ? parts : text;
+  return parts.length > 0 ? parts : renderMarkdown(text);
 };
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ role, content, sources, timestamp }) => {
