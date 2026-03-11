@@ -44,7 +44,7 @@ const ChatInput: React.FC<ChatInputProps> = ({ onSend, disabled, placeholder }) 
           placeholder={placeholder || 'Vnesite vaše vprašanje...'}
           disabled={disabled}
           rows={1}
-          className="flex-1 resize-none rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+          className="flex-1 resize-none overflow-hidden rounded-xl border border-input bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
         />
         <Button
           size="icon"
