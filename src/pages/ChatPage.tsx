@@ -9,7 +9,7 @@ import TypingIndicator from '@/components/TypingIndicator';
 import ContactSupportDialog from '@/components/ContactSupportDialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { HeadphonesIcon, MessageCircle, CheckCircle2 } from 'lucide-react';
+import { HeadphonesIcon, MessageCircle, CheckCircle2, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Message {
