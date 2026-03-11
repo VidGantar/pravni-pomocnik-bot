@@ -160,7 +160,7 @@ const AdminDashboard = () => {
     // Update role
     const currentRole = getUserRole(editProfile.user_id);
     if (currentRole !== editRole) {
-      await supabase.from('user_roles').update({ role: editRole }).eq('user_id', editProfile.user_id);
+      await supabase.from('user_roles').update({ role: editRole as 'admin' | 'support' | 'user' }).eq('user_id', editProfile.user_id);
     }
 
     toast.success('Uporabnik posodobljen');
