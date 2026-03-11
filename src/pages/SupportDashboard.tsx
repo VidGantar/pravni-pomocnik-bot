@@ -31,6 +31,7 @@ const SupportDashboard = () => {
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [resolveTicket, setResolveTicket] = useState<TicketRow | null>(null);
   const [resolution, setResolution] = useState('');
+  const [isResolving, setIsResolving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
