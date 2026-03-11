@@ -57,6 +57,7 @@ const ChatPage = () => {
   useEffect(() => {
     if (!activeConvId) {
       setMessages([]);
+      setShowContactSupport(false);
       return;
     }
     const load = async () => {
@@ -66,6 +67,14 @@ const ChatPage = () => {
         .eq('conversation_id', activeConvId)
         .order('created_at', { ascending: true });
       if (data) setMessages(data as unknown as Message[]);
+
+      // Restore needs_support flag from DB
+      const conv = conversations.find(c => c.id === activeConvId);
+      if (conv && (conv as any).needs_support && conv.status !== 'pending_support' && !conv.status?.startsWith('resolved')) {
+        setShowContactSupport(true);
+      } else {
+        setShowContactSupport(false);
+      }
     };
     load();
   }, [activeConvId]);
