@@ -249,6 +249,19 @@ const ChatPage = () => {
   const activeConv = conversations.find(c => c.id === activeConvId);
   const isResolved = activeConv?.status?.startsWith('resolved');
 
+  const handleResolveByChat = async () => {
+    if (!activeConvId) return;
+    await supabase
+      .from('conversations')
+      .update({ status: 'resolved_chat' })
+      .eq('id', activeConvId);
+    setConversations(prev =>
+      prev.map(c => c.id === activeConvId ? { ...c, status: 'resolved_chat' } : c)
+    );
+    setShowContactSupport(false);
+    toast.success('Pogovor je bil označen kot rešen.');
+  };
+
   return (
     <AppLayout>
       <div className="flex h-full">
