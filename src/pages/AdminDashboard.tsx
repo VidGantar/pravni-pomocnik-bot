@@ -174,6 +174,10 @@ const AdminDashboard = () => {
                   <Ticket className="h-4 w-4" />
                   Zahteve ({tickets.length})
                 </TabsTrigger>
+              <TabsTrigger value="conversations" className="gap-2">
+                  <MessageCircle className="h-4 w-4" />
+                  Pogovori ({conversations.length})
+                </TabsTrigger>
                 <TabsTrigger value="users" className="gap-2">
                   <Users className="h-4 w-4" />
                   Uporabniki ({profiles.length})
