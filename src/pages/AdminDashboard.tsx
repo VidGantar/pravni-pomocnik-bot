@@ -215,6 +215,49 @@ const AdminDashboard = () => {
                 </div>
               </TabsContent>
 
+              <TabsContent value="conversations" className="mt-4 space-y-2">
+                {conversations.map(conv => {
+                  const convStatus = conv.status === 'pending_support'
+                    ? { label: 'Čaka podporo', className: 'bg-pending/10 text-pending border-pending/20' }
+                    : { label: 'Rešen (podpora)', className: 'bg-success/10 text-success border-success/20' };
+                  const ownerProfile = profiles.find(p => p.user_id === conv.user_id);
+                  return (
+                    <Card key={conv.id} className="border-border/50">
+                      <CardContent className="flex items-center gap-4 p-4">
+                        <MessageCircle className="h-5 w-5 shrink-0 text-muted-foreground" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-foreground">{conv.title}</p>
+                          <div className="mt-1 flex items-center gap-2">
+                            <Badge variant="outline" className={convStatus.className}>
+                              {convStatus.label}
+                            </Badge>
+                            {ownerProfile && (
+                              <span className="text-[10px] text-muted-foreground">
+                                {ownerProfile.username}
+                              </span>
+                            )}
+                            <span className="text-[10px] text-muted-foreground">
+                              {new Date(conv.updated_at).toLocaleDateString('sl-SI')}
+                            </span>
+                          </div>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="shrink-0 text-destructive hover:bg-destructive/10 hover:text-destructive"
+                          onClick={() => setDeleteConvId(conv.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  );
+                })}
+                {conversations.length === 0 && (
+                  <p className="py-8 text-center text-sm text-muted-foreground">Ni pogovorov s podporo</p>
+                )}
+              </TabsContent>
+
               <TabsContent value="users" className="mt-4">
                 <div className="mb-4">
                   <Dialog open={showAddUser} onOpenChange={setShowAddUser}>
