@@ -91,7 +91,7 @@ const SupportDashboard = () => {
       category: resolveTicket.category,
     });
 
-    // Append to "Pretekla vprašanja" document
+    // Append to "Pretekla vprašanja" document using AI summary from description
     const { data: pastDoc } = await supabase
       .from('documents')
       .select('id, content')
@@ -100,7 +100,8 @@ const SupportDashboard = () => {
 
     if (pastDoc) {
       const date = new Date().toLocaleDateString('sl-SI');
-      const entry = `\n**${date} — ${resolveTicket.category}**\n**Vprašanje:** ${resolveTicket.subject}\n**Rešitev:** ${resolution}\n\n---\n`;
+      const summary = resolveTicket.description || resolveTicket.subject;
+      const entry = `\n**${date} — ${resolveTicket.category}**\n**Vprašanje:** ${resolveTicket.subject}\n**Povzetek:** ${summary}\n**Rešitev:** ${resolution}\n\n---\n`;
       await supabase
         .from('documents')
         .update({ content: pastDoc.content + entry })
