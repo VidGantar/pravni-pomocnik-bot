@@ -111,7 +111,9 @@ const ContactSupportDialog: React.FC<ContactSupportDialogProps> = ({
               <Label>Podporna služba</Label>
               <Select value={selectedUserId} onValueChange={setSelectedUserId}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Izberite podporno službo" />
+                  <SelectValue placeholder="Izberite podporno službo">
+                    {selectedUser ? (selectedUser.full_name || selectedUser.email) : 'Izberite podporno službo'}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {supportUsers.map(u => (
@@ -128,13 +130,6 @@ const ContactSupportDialog: React.FC<ContactSupportDialogProps> = ({
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-
-            {selectedUser?.department && (
-              <p className="text-xs text-muted-foreground">
-                Področje: <span className="font-medium text-foreground">{selectedUser.department}</span>
-              </p>
-            )}
 
             {suggestedDepartment && (
               <p className="rounded-md bg-accent/50 px-3 py-2 text-xs text-accent-foreground">
