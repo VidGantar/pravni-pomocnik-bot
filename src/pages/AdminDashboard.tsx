@@ -11,8 +11,12 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   LayoutDashboard, Users, Ticket, AlertCircle, CheckCircle2, Clock,
-  UserPlus, Trash2,
+  UserPlus, Trash2, MessageCircle,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
