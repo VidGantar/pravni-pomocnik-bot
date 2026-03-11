@@ -92,7 +92,6 @@ Deno.serve(async (req) => {
 </html>`;
 
     let emailSent = false;
-    const runId = Deno.env.get('DENO_DEPLOYMENT_ID') || '';
 
     if (apiKey) {
       try {
