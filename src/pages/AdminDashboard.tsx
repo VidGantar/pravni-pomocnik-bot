@@ -317,28 +317,25 @@ const AdminDashboard = () => {
             </Tabs>
           </div>
         </ScrollArea>
-      </div>
-    </AppLayout>
-  );
-};
 
-      {/* Delete confirmation dialog */}
-      <AlertDialog open={!!deleteConvId} onOpenChange={open => !open && setDeleteConvId(null)}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Izbriši pogovor?</AlertDialogTitle>
-            <AlertDialogDescription>
-              Ta pogovor in vsa pripadajoča sporočila bodo trajno izbrisana. Tega dejanja ni mogoče razveljaviti.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Prekliči</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteConversation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Izbriši
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+        {/* Delete confirmation dialog */}
+        <AlertDialog open={!!deleteConvId} onOpenChange={open => !open && setDeleteConvId(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Izbriši pogovor?</AlertDialogTitle>
+              <AlertDialogDescription>
+                Ta pogovor in vsa pripadajoča sporočila bodo trajno izbrisana. Tega dejanja ni mogoče razveljaviti.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Prekliči</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDeleteConversation} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+                Izbriši
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </div>
     </AppLayout>
   );
 };
