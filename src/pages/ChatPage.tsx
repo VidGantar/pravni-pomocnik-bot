@@ -6,6 +6,7 @@ import ChatSidebar from '@/components/ChatSidebar';
 import ChatMessage from '@/components/ChatMessage';
 import ChatInput from '@/components/ChatInput';
 import TypingIndicator from '@/components/TypingIndicator';
+import ContactSupportDialog from '@/components/ContactSupportDialog';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { HeadphonesIcon, MessageCircle } from 'lucide-react';
@@ -34,6 +35,8 @@ const ChatPage = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [showContactSupport, setShowContactSupport] = useState(false);
+  const [showSupportDialog, setShowSupportDialog] = useState(false);
+  const [suggestedDepartment, setSuggestedDepartment] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch conversations
@@ -144,6 +147,8 @@ const ChatPage = () => {
       const assistantContent = fnData?.reply || 'Oprostite, nisem mogel obdelati vašega vprašanja.';
       const sources = fnData?.sources || null;
       const canAnswer = fnData?.can_answer !== false;
+      const dept = fnData?.suggested_department || null;
+      setSuggestedDepartment(dept);
 
       // Save assistant message
       const { data: assistantMsg } = await supabase
@@ -197,13 +202,13 @@ const ChatPage = () => {
     }
   };
 
-  const handleContactSupport = async () => {
+  const handleContactSupport = async (supportUserId: string) => {
     if (!activeConvId || !user) return;
 
-    // Update conversation status
+    // Update conversation status and assign to selected support user
     await supabase
       .from('conversations')
-      .update({ status: 'pending_support' })
+      .update({ status: 'pending_support', assigned_to: supportUserId })
       .eq('id', activeConvId);
 
     // Create ticket
@@ -213,9 +218,10 @@ const ChatPage = () => {
       .insert({
         conversation_id: activeConvId,
         user_id: user.id,
+        assigned_to: supportUserId,
         subject: lastUserMsg?.content.slice(0, 100) || 'Zahteva za podporo',
         description: messages.map(m => `${m.role}: ${m.content}`).join('\n\n'),
-        category: 'splošno',
+        category: suggestedDepartment || 'splošno',
       });
 
     setConversations(prev =>
@@ -223,6 +229,7 @@ const ChatPage = () => {
     );
 
     setShowContactSupport(false);
+    setShowSupportDialog(false);
     toast.success('Zahteva za podporo je bila poslana. Podpora se bo oglasila.');
 
     // Add system message
@@ -295,7 +302,7 @@ const ChatPage = () => {
               {showContactSupport && !isResolved && (
                 <div className="flex justify-center animate-fade-in">
                   <Button
-                    onClick={handleContactSupport}
+                    onClick={() => setShowSupportDialog(true)}
                     variant="outline"
                     className="gap-2 border-pending/30 text-pending hover:bg-pending/10"
                   >
@@ -304,6 +311,13 @@ const ChatPage = () => {
                   </Button>
                 </div>
               )}
+
+              <ContactSupportDialog
+                open={showSupportDialog}
+                onOpenChange={setShowSupportDialog}
+                onConfirm={handleContactSupport}
+                suggestedDepartment={suggestedDepartment}
+              />
 
               <div ref={messagesEndRef} />
             </div>

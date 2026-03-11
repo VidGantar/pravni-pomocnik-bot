@@ -67,8 +67,11 @@ Ko odgovarjaš, vrni JSON v naslednji obliki:
 {
   "reply": "tvoj odgovor tukaj",
   "sources": [{"title": "naslov dokumenta", "excerpt": "kratek izvleček"}] ali null če ni virov,
-  "can_answer": true/false (false če nisi našel odgovora v gradivih)
+  "can_answer": true/false (false če nisi našel odgovora v gradivih),
+  "suggested_department": "IT podpora" ali "Splošna podpora" ali "Kadrovska služba" ali "Urad generalnega državnega odvetnika" ali null
 }
+
+Za suggested_department: Vedno določi, katera služba bi bila najbolj primerna za to vprašanje. Uporabi "IT podpora" za tehnične/računalniške težave, "Kadrovska služba" za kadrovske zadeve, "Urad generalnega državnega odvetnika" za pravna vprašanja, "Splošna podpora" za vse ostalo.
 
 POMEMBNO: Odgovori SAMO z veljavnim JSON objektom, brez dodatnega besedila.`;
 
