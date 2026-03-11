@@ -1,6 +1,12 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { Bot, User, HeadphonesIcon } from 'lucide-react';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
 interface Source {
   title: string;
@@ -13,6 +19,43 @@ interface ChatMessageProps {
   sources?: Source[];
   timestamp?: string;
 }
+
+// Parse [[name||email||dept]] markup into rich elements
+const renderContent = (text: string) => {
+  const regex = /\[\[(.+?)\|\|(.+?)\|\|(.+?)\]\]/g;
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+    const [, name, email, dept] = match;
+    parts.push(
+      <TooltipProvider key={match.index}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span className="font-semibold text-primary underline decoration-dotted cursor-help">
+              {name}
+            </span>
+          </TooltipTrigger>
+          <TooltipContent side="top" className="text-xs space-y-0.5">
+            {email && <p>📧 {email}</p>}
+            {dept && <p>🏢 {dept}</p>}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts.length > 0 ? parts : text;
+};
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ role, content, sources, timestamp }) => {
   const isUser = role === 'user';
@@ -42,7 +85,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ role, content, sources, times
               ? 'bg-success/10 text-foreground border border-success/20 rounded-bl-md'
               : 'bg-card text-foreground border border-border rounded-bl-md'
         )}>
-          <p className="whitespace-pre-wrap">{content}</p>
+          <p className="whitespace-pre-wrap">{renderContent(content)}</p>
         </div>
 
         {sources && sources.length > 0 && (
