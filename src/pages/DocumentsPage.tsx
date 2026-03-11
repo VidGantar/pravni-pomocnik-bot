@@ -188,7 +188,7 @@ const DocumentsPage = () => {
                 >
                   <div className="flex items-start gap-2">
                     <FolderOpen className="mt-0.5 h-4 w-4 shrink-0 text-primary" />
-                    <div>
+                    <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-foreground">{doc.title}</p>
                       <div className="mt-1 flex items-center gap-2">
                         <Badge variant="secondary" className="text-[10px]">{doc.category}</Badge>
@@ -197,6 +197,19 @@ const DocumentsPage = () => {
                         </span>
                       </div>
                     </div>
+                    {role === 'admin' && (
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setDeleteDocId(doc.id);
+                        }}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" />
+                      </Button>
+                    )}
                   </div>
                 </button>
               ))}
