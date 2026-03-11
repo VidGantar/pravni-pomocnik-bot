@@ -107,7 +107,9 @@ const SupportDashboard = () => {
         .eq('id', pastDoc.id);
     }
 
-    toast.success('Zahteva označena kot rešena');
+    } finally {
+      setIsResolving(false);
+    }
     setResolveTicket(null);
     setResolution('');
     loadTickets();
