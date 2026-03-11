@@ -200,6 +200,10 @@ const ChatPage = () => {
 
       if (!fallbackReply.canAnswer) {
         setShowContactSupport(true);
+        await supabase
+          .from('conversations')
+          .update({ needs_support: true })
+          .eq('id', convId);
       }
     } finally {
       setIsTyping(false);
