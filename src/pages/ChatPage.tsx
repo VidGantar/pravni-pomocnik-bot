@@ -202,13 +202,13 @@ const ChatPage = () => {
     }
   };
 
-  const handleContactSupport = async () => {
+  const handleContactSupport = async (supportUserId: string) => {
     if (!activeConvId || !user) return;
 
-    // Update conversation status
+    // Update conversation status and assign to selected support user
     await supabase
       .from('conversations')
-      .update({ status: 'pending_support' })
+      .update({ status: 'pending_support', assigned_to: supportUserId })
       .eq('id', activeConvId);
 
     // Create ticket
@@ -218,9 +218,10 @@ const ChatPage = () => {
       .insert({
         conversation_id: activeConvId,
         user_id: user.id,
+        assigned_to: supportUserId,
         subject: lastUserMsg?.content.slice(0, 100) || 'Zahteva za podporo',
         description: messages.map(m => `${m.role}: ${m.content}`).join('\n\n'),
-        category: 'splošno',
+        category: suggestedDepartment || 'splošno',
       });
 
     setConversations(prev =>
@@ -228,6 +229,7 @@ const ChatPage = () => {
     );
 
     setShowContactSupport(false);
+    setShowSupportDialog(false);
     toast.success('Zahteva za podporo je bila poslana. Podpora se bo oglasila.');
 
     // Add system message
