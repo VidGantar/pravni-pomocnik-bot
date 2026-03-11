@@ -29,6 +29,9 @@ Deno.serve(async (req) => {
   const apiKey = Deno.env.get('LOVABLE_API_KEY')
   const supabaseUrl = Deno.env.get('SUPABASE_URL')
   const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
+  const projectId = Deno.env.get('LOVABLE_PROJECT_ID') || Deno.env.get('PROJECT_ID')
+  
+  console.log('Available env vars:', Object.keys(Deno.env.toObject()).filter(k => k.includes('LOVABLE') || k.includes('PROJECT') || k.includes('RUN')))
 
   if (!apiKey || !supabaseUrl || !supabaseServiceKey) {
     console.error('Missing required environment variables')
