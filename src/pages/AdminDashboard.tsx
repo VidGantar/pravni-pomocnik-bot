@@ -60,20 +60,37 @@ const statusConfig: Record<string, { label: string; icon: React.ElementType; col
 const AdminDashboard = () => {
   const [tickets, setTickets] = useState<TicketRow[]>([]);
   const [profiles, setProfiles] = useState<ProfileRow[]>([]);
+  const [conversations, setConversations] = useState<ConversationRow[]>([]);
   const [showAddUser, setShowAddUser] = useState(false);
   const [newUser, setNewUser] = useState({ email: '', password: '', username: '', role: 'user' as string });
+  const [deleteConvId, setDeleteConvId] = useState<string | null>(null);
 
   useEffect(() => {
     loadData();
   }, []);
 
   const loadData = async () => {
-    const [ticketsRes, profilesRes] = await Promise.all([
+    const [ticketsRes, profilesRes, convsRes] = await Promise.all([
       supabase.from('tickets').select('*').order('created_at', { ascending: false }),
       supabase.from('profiles').select('*'),
+      supabase.from('conversations').select('*')
+        .in('status', ['pending_support', 'resolved_support'])
+        .order('updated_at', { ascending: false }),
     ]);
     if (ticketsRes.data) setTickets(ticketsRes.data as TicketRow[]);
     if (profilesRes.data) setProfiles(profilesRes.data as ProfileRow[]);
+    if (convsRes.data) setConversations(convsRes.data as ConversationRow[]);
+  };
+
+  const handleDeleteConversation = async () => {
+    if (!deleteConvId) return;
+    // Delete messages first, then conversation
+    await supabase.from('messages').delete().eq('conversation_id', deleteConvId);
+    await supabase.from('tickets').delete().eq('conversation_id', deleteConvId);
+    await supabase.from('conversations').delete().eq('id', deleteConvId);
+    setConversations(prev => prev.filter(c => c.id !== deleteConvId));
+    setDeleteConvId(null);
+    toast.success('Pogovor je bil izbrisan');
   };
 
   const handleAddUser = async () => {
