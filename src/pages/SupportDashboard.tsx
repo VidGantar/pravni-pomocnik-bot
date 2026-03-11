@@ -353,13 +353,22 @@ const SupportDashboard = () => {
                 ) : (
                   <Select value={selectedSupportUser} onValueChange={setSelectedSupportUser}>
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="Izberite podpornika..." />
+                      <SelectValue placeholder="Izberite podpornika...">
+                        {selectedSupportUser && (() => {
+                          const su = supportUsers.find(s => s.user_id === selectedSupportUser);
+                          return su ? (su.full_name || su.email || su.user_id) : '';
+                        })()}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       {supportUsers.map(su => (
                         <SelectItem key={su.user_id} value={su.user_id}>
-                          {su.full_name || su.email || su.user_id}
-                          {su.department ? ` (${su.department})` : ''}
+                          <div>
+                            <span>{su.full_name || su.email || su.user_id}</span>
+                            {su.department && (
+                              <span className="ml-1 text-xs text-muted-foreground">({su.department})</span>
+                            )}
+                          </div>
                         </SelectItem>
                       ))}
                     </SelectContent>
