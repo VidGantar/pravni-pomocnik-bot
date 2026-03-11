@@ -407,7 +407,7 @@ const ChatPage = () => {
 
               <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Input */}
           {!isResolved ? (
